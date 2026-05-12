@@ -1,0 +1,125 @@
+.wrong-book-page {
+  gap: 18px;
+}
+
+.wrong-book-header {
+  display: grid;
+  gap: 8px;
+}
+
+.wrong-book-header__eyebrow {
+  margin: 0;
+  color: #607184;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.wrong-book-header__title {
+  margin: 0;
+  color: #15212f;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.wrong-book-header__text {
+  margin: 0;
+  color: #526171;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.wrong-book-empty {
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 28px 18px;
+  text-align: center;
+}
+
+.wrong-book-empty h2 {
+  margin: 0 0 8px;
+  color: #15212f;
+  font-size: 24px;
+}
+
+.wrong-book-empty p {
+  margin: 0;
+  color: #617284;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.wrong-word-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wrong-word-card {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.wrong-word-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.wrong-word-card__word {
+  margin: 0;
+  color: #15212f;
+  font-size: 26px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wrong-word-card__meta {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.wrong-word-card__tag,
+.wrong-word-card__count {
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.wrong-word-card__tag {
+  background: #e9f3fb;
+  color: #1769aa;
+}
+
+.wrong-word-card__count {
+  background: #fff1ed;
+  color: #b3261e;
+}
+
+.wrong-word-card__meaning {
+  margin: 0;
+  color: #293846;
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.wrong-word-card__button {
+  min-height: 50px;
+  border: 0;
+  border-radius: 8px;
+  background: #237a57;
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 900;
+}

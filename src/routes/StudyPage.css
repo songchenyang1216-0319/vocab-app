@@ -1,0 +1,137 @@
+.study-page {
+  gap: 18px;
+}
+
+.study-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.study-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid #d8e2ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1769aa;
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.study-progress {
+  color: #526171;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.study-card {
+  display: grid;
+  gap: 22px;
+  min-height: 360px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px 18px;
+}
+
+.study-card__tag {
+  justify-self: start;
+  border-radius: 999px;
+  background: #e9f3fb;
+  color: #1769aa;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.study-card__word {
+  margin: 0;
+  color: #15212f;
+  font-size: 46px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.study-meaning {
+  display: grid;
+  gap: 10px;
+  min-height: 112px;
+}
+
+.study-meaning__text {
+  margin: 0;
+  color: #263747;
+  font-size: 20px;
+  line-height: 1.7;
+}
+
+.study-meaning__placeholder {
+  margin: 0;
+  color: #718196;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.study-toggle-button {
+  min-height: 52px;
+  border: 1px solid #c8d6e5;
+  border-radius: 8px;
+  background: #f8fbfe;
+  color: #1769aa;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.study-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.study-action-button {
+  min-height: 64px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 0 8px;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.study-action-button--known {
+  background: #237a57;
+}
+
+.study-action-button--vague {
+  background: #b45f06;
+}
+
+.study-action-button--unknown {
+  background: #b3261e;
+}
+
+.study-complete {
+  display: grid;
+  gap: 16px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px 18px;
+}
+
+.study-complete h1 {
+  margin: 0;
+  font-size: 30px;
+}
+
+.study-complete p {
+  margin: 0;
+  color: #526171;
+  font-size: 17px;
+  line-height: 1.7;
+}
