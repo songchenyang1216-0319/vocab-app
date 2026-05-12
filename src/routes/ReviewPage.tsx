@@ -3,10 +3,11 @@ import { Link } from "react-router-dom";
 import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
 import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
 import {
+  isDueReviewRecord,
   loadStudyProgress,
   markReviewWord,
+  sortReviewRecords,
   type StudyStatus,
-  type WordStudyRecord,
 } from "../utils/studyStorage";
 import "./ReviewPage.css";
 
@@ -18,40 +19,6 @@ const reviewActions: Array<{ label: string; status: StudyStatus; className: stri
   { label: "还模糊", status: "vague", className: "review-action-button--vague" },
   { label: "没记住", status: "unknown", className: "review-action-button--unknown" },
 ];
-
-function getStatusPriority(status: StudyStatus) {
-  if (status === "unknown") {
-    return 2;
-  }
-
-  if (status === "vague") {
-    return 1;
-  }
-
-  return 0;
-}
-
-function isDueReviewRecord(record: WordStudyRecord, nowTime: number) {
-  const nextReviewTime = new Date(record.nextReviewAt).getTime();
-
-  return Number.isFinite(nextReviewTime) && nextReviewTime <= nowTime;
-}
-
-function sortReviewRecords(left: WordStudyRecord, right: WordStudyRecord) {
-  const wrongCountDiff = right.wrongCount - left.wrongCount;
-
-  if (wrongCountDiff !== 0) {
-    return wrongCountDiff;
-  }
-
-  const statusDiff = getStatusPriority(right.status) - getStatusPriority(left.status);
-
-  if (statusDiff !== 0) {
-    return statusDiff;
-  }
-
-  return new Date(left.nextReviewAt).getTime() - new Date(right.nextReviewAt).getTime();
-}
 
 function ReviewPage() {
   const [progress, setProgress] = useState(() => loadStudyProgress());

@@ -164,6 +164,12 @@ function SearchPage() {
                       </span>
                     </div>
                     <div className="search-detail">
+                      <span className="search-detail__label">连续认识</span>
+                      <span className="search-detail__value">
+                        {getRecordValue(record, "correctStreak")}
+                      </span>
+                    </div>
+                    <div className="search-detail">
                       <span className="search-detail__label">上次复习</span>
                       <span className="search-detail__value">
                         {getRecordValue(record, "lastReviewAt")}

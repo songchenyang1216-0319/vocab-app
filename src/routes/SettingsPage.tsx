@@ -126,6 +126,14 @@ function SettingsPage() {
       </section>
 
       <section className="settings-section">
+        <h2 className="settings-section__title">复习间隔说明</h2>
+        <p className="settings-section__text">
+          不认识：30 分钟后；有印象或记错了：明天；认识 1 次：3 天后；连续认识 2 次：7
+          天后；连续认识 3 次：15 天后；连续认识 4 次及以上：30 天后。
+        </p>
+      </section>
+
+      <section className="settings-section">
         <h2 className="settings-section__title">每日目标</h2>
         <div className="settings-options">
           {dailyGoals.map((goal) => (

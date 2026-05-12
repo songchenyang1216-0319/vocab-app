@@ -32,5 +32,7 @@ export function subscribePwaUpdate(listener: PwaUpdateListener) {
 export async function applyPwaUpdate() {
   hasPendingUpdate = false;
   notifyUpdateListeners();
+
+  // 激活等待中的新 service worker。virtual:pwa-register 会在控制权切换后刷新页面。
   await updateServiceWorker(true);
 }

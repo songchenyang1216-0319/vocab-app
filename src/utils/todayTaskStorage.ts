@@ -1,7 +1,7 @@
 import type { VocabWord } from "../types/vocab";
 import type { AppSettings } from "./settingsStorage";
-import type { AppProgress, StudyStatus, WordStudyRecord } from "./studyStorage";
-import { saveStudyProgress } from "./studyStorage";
+import type { AppProgress } from "./studyStorage";
+import { isDueReviewRecord, saveStudyProgress, sortReviewRecords } from "./studyStorage";
 import { getStudyWords, SKIP_SIMPLE_WORDS } from "./studyWords";
 
 export const TODAY_TASK_STORAGE_KEY = "daily-study-task-v1";
@@ -34,40 +34,6 @@ function createDefaultTask(date = getTodayText()): TodayTask {
 
 function getTaskTotalCount(task: TodayTask) {
   return task.newWordIds.length + task.reviewWordIds.length;
-}
-
-function getStatusPriority(status: StudyStatus) {
-  if (status === "unknown") {
-    return 2;
-  }
-
-  if (status === "vague") {
-    return 1;
-  }
-
-  return 0;
-}
-
-function isDueReviewRecord(record: WordStudyRecord, nowTime: number) {
-  const nextReviewTime = new Date(record.nextReviewAt).getTime();
-
-  return Number.isFinite(nextReviewTime) && nextReviewTime <= nowTime;
-}
-
-function sortReviewRecords(left: WordStudyRecord, right: WordStudyRecord) {
-  const wrongCountDiff = right.wrongCount - left.wrongCount;
-
-  if (wrongCountDiff !== 0) {
-    return wrongCountDiff;
-  }
-
-  const statusDiff = getStatusPriority(right.status) - getStatusPriority(left.status);
-
-  if (statusDiff !== 0) {
-    return statusDiff;
-  }
-
-  return new Date(left.nextReviewAt).getTime() - new Date(right.nextReviewAt).getTime();
 }
 
 function parseTodayTask(rawValue: string | null): TodayTask {

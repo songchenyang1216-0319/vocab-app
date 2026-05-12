@@ -11,6 +11,7 @@ export interface WordStudyRecord {
   status: StudyStatus;
   reviewCount: number;
   wrongCount: number;
+  correctStreak: number;
   lastReviewAt: string;
   nextReviewAt: string;
 }
@@ -62,11 +63,61 @@ function normalizeProgressDate(progress: AppProgress): AppProgress {
   };
 }
 
-function getNextReviewAt(status: StudyStatus, now: Date) {
+function getKnownReviewDays(correctStreak: number) {
+  if (correctStreak <= 1) {
+    return 3;
+  }
+
+  if (correctStreak === 2) {
+    return 7;
+  }
+
+  if (correctStreak === 3) {
+    return 15;
+  }
+
+  return 30;
+}
+
+export function getStatusPriority(status: StudyStatus) {
+  if (status === "unknown") {
+    return 2;
+  }
+
+  if (status === "vague") {
+    return 1;
+  }
+
+  return 0;
+}
+
+export function isDueReviewRecord(record: WordStudyRecord, nowTime: number) {
+  const nextReviewTime = new Date(record.nextReviewAt).getTime();
+
+  return Number.isFinite(nextReviewTime) && nextReviewTime <= nowTime;
+}
+
+export function sortReviewRecords(left: WordStudyRecord, right: WordStudyRecord) {
+  const statusDiff = getStatusPriority(right.status) - getStatusPriority(left.status);
+
+  if (statusDiff !== 0) {
+    return statusDiff;
+  }
+
+  const wrongCountDiff = right.wrongCount - left.wrongCount;
+
+  if (wrongCountDiff !== 0) {
+    return wrongCountDiff;
+  }
+
+  return new Date(left.nextReviewAt).getTime() - new Date(right.nextReviewAt).getTime();
+}
+
+export function calculateNextReviewAt(status: StudyStatus, correctStreak: number, now = new Date()) {
   const next = new Date(now);
 
   if (status === "known") {
-    next.setDate(next.getDate() + 3);
+    next.setDate(next.getDate() + getKnownReviewDays(correctStreak));
   }
 
   if (status === "vague") {
@@ -78,6 +129,21 @@ function getNextReviewAt(status: StudyStatus, now: Date) {
   }
 
   return next.toISOString();
+}
+
+function buildUpdatedRecord(oldRecord: WordStudyRecord | undefined, wordId: number, status: StudyStatus, now: Date) {
+  const nextCorrectStreak = status === "known" ? (oldRecord?.correctStreak ?? 0) + 1 : 0;
+  const shouldAddWrongCount = status === "vague" || status === "unknown";
+
+  return {
+    wordId,
+    status,
+    reviewCount: (oldRecord?.reviewCount ?? 0) + 1,
+    wrongCount: (oldRecord?.wrongCount ?? 0) + (shouldAddWrongCount ? 1 : 0),
+    correctStreak: nextCorrectStreak,
+    lastReviewAt: now.toISOString(),
+    nextReviewAt: calculateNextReviewAt(status, nextCorrectStreak, now),
+  };
 }
 
 function getKnownReviewAtAfterSevenDays(now: Date) {
@@ -98,7 +164,15 @@ function parseProgress(rawValue: string | null): AppProgress {
     return normalizeProgressDate({
       ...createDefaultProgress(),
       ...parsed,
-      records: parsed.records ?? {},
+      records: Object.fromEntries(
+        Object.entries(parsed.records ?? {}).map(([key, record]) => [
+          key,
+          {
+            ...record,
+            correctStreak: typeof record?.correctStreak === "number" ? record.correctStreak : 0,
+          },
+        ]),
+      ),
       todayStudiedIds: parsed.todayStudiedIds ?? [],
       studyQueueIds: Array.isArray(parsed.studyQueueIds) ? parsed.studyQueueIds : undefined,
       studyQueueMode: typeof parsed.studyQueueMode === "string" ? parsed.studyQueueMode : undefined,
@@ -148,7 +222,15 @@ export function importStudyProgressJson(jsonText: string): AppProgress {
   const progress = normalizeProgressDate({
     ...createDefaultProgress(),
     ...parsed,
-    records: parsed.records ?? {},
+    records: Object.fromEntries(
+      Object.entries(parsed.records ?? {}).map(([key, record]) => [
+        key,
+        {
+          ...record,
+          correctStreak: typeof record?.correctStreak === "number" ? record.correctStreak : 0,
+        },
+      ]),
+    ),
     todayStudiedIds: parsed.todayStudiedIds ?? [],
     studyQueueIds: Array.isArray(parsed.studyQueueIds) ? parsed.studyQueueIds : undefined,
     studyQueueMode: typeof parsed.studyQueueMode === "string" ? parsed.studyQueueMode : undefined,
@@ -211,7 +293,6 @@ export function markCurrentWordWithoutMoving(
 ): AppProgress {
   const now = new Date();
   const oldRecord = progress.records[wordId];
-  const shouldAddWrongCount = status === "vague" || status === "unknown";
   const todayStudiedIds = progress.todayStudiedIds.includes(wordId)
     ? progress.todayStudiedIds
     : [...progress.todayStudiedIds, wordId];
@@ -223,14 +304,7 @@ export function markCurrentWordWithoutMoving(
     studyQueueUpdatedAt: now.toISOString(),
     records: {
       ...progress.records,
-      [wordId]: {
-        wordId,
-        status,
-        reviewCount: (oldRecord?.reviewCount ?? 0) + 1,
-        wrongCount: (oldRecord?.wrongCount ?? 0) + (shouldAddWrongCount ? 1 : 0),
-        lastReviewAt: now.toISOString(),
-        nextReviewAt: getNextReviewAt(status, now),
-      },
+      [wordId]: buildUpdatedRecord(oldRecord, wordId, status, now),
     },
   };
 
@@ -273,7 +347,6 @@ export function markWordAndMoveNext(
 ): AppProgress {
   const now = new Date();
   const oldRecord = progress.records[wordId];
-  const shouldAddWrongCount = status === "vague" || status === "unknown";
   const todayStudiedIds = progress.todayStudiedIds.includes(wordId)
     ? progress.todayStudiedIds
     : [...progress.todayStudiedIds, wordId];
@@ -286,14 +359,7 @@ export function markWordAndMoveNext(
     studyQueueUpdatedAt: now.toISOString(),
     records: {
       ...progress.records,
-      [wordId]: {
-        wordId,
-        status,
-        reviewCount: (oldRecord?.reviewCount ?? 0) + 1,
-        wrongCount: (oldRecord?.wrongCount ?? 0) + (shouldAddWrongCount ? 1 : 0),
-        lastReviewAt: now.toISOString(),
-        nextReviewAt: getNextReviewAt(status, now),
-      },
+      [wordId]: buildUpdatedRecord(oldRecord, wordId, status, now),
     },
   };
 
@@ -319,6 +385,7 @@ export function markWrongWordAsKnown(progress: AppProgress, wordId: number): App
         ...oldRecord,
         status: "known",
         wrongCount: 0,
+        correctStreak: Math.max(1, oldRecord.correctStreak ?? 0),
         lastReviewAt: now.toISOString(),
         nextReviewAt: getKnownReviewAtAfterSevenDays(now),
       },
@@ -339,19 +406,11 @@ export function markReviewWord(progress: AppProgress, wordId: number, status: St
     return progress;
   }
 
-  const shouldAddWrongCount = status === "vague" || status === "unknown";
   const nextProgress: AppProgress = {
     ...progress,
     records: {
       ...progress.records,
-      [wordId]: {
-        ...oldRecord,
-        status,
-        reviewCount: oldRecord.reviewCount + 1,
-        wrongCount: oldRecord.wrongCount + (shouldAddWrongCount ? 1 : 0),
-        lastReviewAt: now.toISOString(),
-        nextReviewAt: getNextReviewAt(status, now),
-      },
+      [wordId]: buildUpdatedRecord(oldRecord, wordId, status, now),
     },
   };
 

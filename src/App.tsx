@@ -1,5 +1,5 @@
 import { NavLink, Route, Routes } from "react-router-dom";
-import PwaUpdateBanner from "./components/PwaUpdateBanner";
+import AppUpdatePrompt from "./components/AppUpdatePrompt";
 import HomePage from "./routes/HomePage";
 import ReviewPage from "./routes/ReviewPage";
 import SearchPage from "./routes/SearchPage";
@@ -21,7 +21,7 @@ const navItems = [
 function App() {
   return (
     <div className="app-shell">
-      <PwaUpdateBanner />
+      <AppUpdatePrompt />
 
       <main className="app-main">
         <Routes>
