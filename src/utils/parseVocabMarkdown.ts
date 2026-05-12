@@ -16,7 +16,17 @@ function createParseError(message: string, details: string[]) {
   return new Error(`${message}${detailText}`);
 }
 
-export function parseVocabMarkdown(markdownText: string): VocabWord[] {
+export interface ParseVocabMarkdownOptions {
+  minCount?: number;
+  maxCount?: number;
+}
+
+export function parseVocabMarkdown(
+  markdownText: string,
+  options: ParseVocabMarkdownOptions = {},
+): VocabWord[] {
+  const minCount = options.minCount ?? 5000;
+  const maxCount = options.maxCount ?? 6000;
   const words: VocabWord[] = [];
   const invalidLines: string[] = [];
   const invalidTags: string[] = [];
@@ -78,7 +88,7 @@ export function parseVocabMarkdown(markdownText: string): VocabWord[] {
     ]);
   }
 
-  if (words.length < 5000 || words.length > 6000) {
+  if (words.length < minCount || words.length > maxCount) {
     throw createParseError(`词表解析数量异常：当前解析到 ${words.length} 条。`, [
       "预期数量应在 5500 条左右，请检查词表文件是否完整。",
     ]);

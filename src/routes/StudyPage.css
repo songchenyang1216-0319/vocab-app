@@ -109,6 +109,7 @@
 .study-meta-row {
   display: flex;
   align-items: center;
+  gap: 10px;
   min-height: 30px;
 }
 
@@ -122,6 +123,27 @@
   padding: 0 12px;
   font-size: 15px;
   font-weight: 900;
+}
+
+.study-note-toggle {
+  min-height: 30px;
+  border: 1px solid #d8e2ec;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #5f646d;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.study-note-toggle--active {
+  border-color: #1769aa;
+  background: #e9f3fb;
+  color: #1769aa;
+}
+
+.study-note-panel {
+  margin-top: 18px;
 }
 
 .study-meaning {

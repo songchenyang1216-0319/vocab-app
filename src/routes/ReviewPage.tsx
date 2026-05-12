@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
+import WordNoteEditor from "../components/WordNoteEditor";
+import { wordMap } from "../data/vocab";
 import {
   isDueReviewRecord,
   loadStudyProgress,
@@ -9,10 +9,8 @@ import {
   sortReviewRecords,
   type StudyStatus,
 } from "../utils/studyStorage";
+import { hasWordNote } from "../utils/wordNotesStorage";
 import "./ReviewPage.css";
-
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
-const wordMap = new Map(vocabWords.map((word) => [word.id, word]));
 
 const reviewActions: Array<{ label: string; status: StudyStatus; className: string }> = [
   { label: "记住了", status: "known", className: "review-action-button--known" },
@@ -21,9 +19,19 @@ const reviewActions: Array<{ label: string; status: StudyStatus; className: stri
 ];
 
 function ReviewPage() {
-  const [progress, setProgress] = useState(() => loadStudyProgress());
+  const [initialReviewProgress] = useState(() => loadStudyProgress());
+  const [initialReviewTotal] = useState(() => {
+    const nowTime = Date.now();
+
+    return Object.values(initialReviewProgress.records).filter((record) =>
+      isDueReviewRecord(record, nowTime),
+    ).length;
+  });
+  const [progress, setProgress] = useState(() => initialReviewProgress);
   const [completedReviewCount, setCompletedReviewCount] = useState(0);
   const [showMeaning, setShowMeaning] = useState(false);
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
+  const [, setNoteVersion] = useState(0);
   const dueReviewItems = useMemo(() => {
     const nowTime = Date.now();
 
@@ -36,10 +44,10 @@ function ReviewPage() {
       }))
       .filter((item) => item.word);
   }, [progress]);
-  const totalReviewCount = completedReviewCount + dueReviewItems.length;
   const currentReviewItem = dueReviewItems[0];
   const currentWord = currentReviewItem?.word;
-  const currentDisplayIndex = Math.min(completedReviewCount + 1, totalReviewCount);
+  const currentDisplayIndex =
+    initialReviewTotal === 0 ? 0 : Math.min(completedReviewCount + 1, initialReviewTotal);
 
   function handleReview(status: StudyStatus) {
     if (!currentReviewItem) {
@@ -50,6 +58,7 @@ function ReviewPage() {
 
     setProgress(nextProgress);
     setShowMeaning(false);
+    setShowNoteEditor(false);
     setCompletedReviewCount((count) => count + 1);
   }
 
@@ -60,7 +69,9 @@ function ReviewPage() {
           <Link className="review-back-link" to="/">
             返回首页
           </Link>
-          <span className="review-progress">0 / 0</span>
+          <span className="review-progress">
+            {initialReviewTotal > 0 ? `${initialReviewTotal} / ${initialReviewTotal}` : "0 / 0"}
+          </span>
         </div>
 
         <div className="review-empty">
@@ -81,7 +92,7 @@ function ReviewPage() {
           返回首页
         </Link>
         <span className="review-progress">
-          {currentDisplayIndex} / {dueReviewItems.length}
+          {currentDisplayIndex} / {initialReviewTotal}
         </span>
       </div>
 
@@ -91,8 +102,24 @@ function ReviewPage() {
       </div>
 
       <article className="review-card">
-        <span className="review-card__tag">{currentWord.tag}</span>
+        <div className="review-card__meta">
+          <span className="review-card__tag">{currentWord.tag}</span>
+          <button
+            className={hasWordNote(currentWord.id) ? "review-note-toggle review-note-toggle--active" : "review-note-toggle"}
+            type="button"
+            onClick={() => setShowNoteEditor((value) => !value)}
+          >
+            {hasWordNote(currentWord.id) ? "有笔记" : "笔记"}
+          </button>
+        </div>
         <h1 className="review-card__word">{currentWord.word}</h1>
+
+        {showNoteEditor ? (
+          <WordNoteEditor
+            wordId={currentWord.id}
+            onChanged={() => setNoteVersion((version) => version + 1)}
+          />
+        ) : null}
 
         <div className="review-meaning">
           {showMeaning ? (

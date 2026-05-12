@@ -406,15 +406,21 @@ export function markReviewWord(progress: AppProgress, wordId: number, status: St
     return progress;
   }
 
+  const todayStudiedIds = progress.todayStudiedIds.includes(wordId)
+    ? progress.todayStudiedIds
+    : [...progress.todayStudiedIds, wordId];
+
   const nextProgress: AppProgress = {
     ...progress,
+    today: getTodayText(now),
+    todayStudiedIds,
     records: {
       ...progress.records,
       [wordId]: buildUpdatedRecord(oldRecord, wordId, status, now),
     },
   };
 
-  // 复习页每次反馈后立即保存，避免刷新或退出时丢失复习结果。
+  // 复习页每次反馈后立即保存，同时计入“今日已背”。
   saveStudyProgress(nextProgress);
 
   return nextProgress;

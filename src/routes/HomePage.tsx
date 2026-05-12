@@ -2,16 +2,13 @@ import { Link } from "react-router-dom";
 import HomeActionButton from "../components/HomeActionButton";
 import HomeStatCard from "../components/HomeStatCard";
 import { APP_VERSION } from "../config/appVersion";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
+import { vocabWords } from "../data/vocab";
 import { readHomeStats } from "../utils/homeStats";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
 import { loadSettings } from "../utils/settingsStorage";
 import { ensureStudyQueue, loadStudyProgress } from "../utils/studyStorage";
 import { getStudyWords, SKIP_SIMPLE_WORDS } from "../utils/studyWords";
 import { ensureTodayTask, getCurrentTaskMode } from "../utils/todayTaskStorage";
 import "./HomePage.css";
-
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
 
 function HomePage() {
   const stats = readHomeStats();
@@ -86,6 +83,7 @@ function HomePage() {
           variant="primary"
         />
         <HomeActionButton description="看看这段时间学得怎么样" title="学习统计" to="/stats" />
+        <HomeActionButton description="整理自己的记忆方法" title="我的笔记" to="/notes" />
         <HomeActionButton description="集中处理不熟的词" title="复习错词" to="/review" />
         <HomeActionButton description="收集想回头看的新词" title="生词本" to="/vocab-book" />
         <HomeActionButton description="快速查找英文单词" title="搜索单词" to="/search" />

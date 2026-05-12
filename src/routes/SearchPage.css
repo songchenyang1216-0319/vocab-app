@@ -128,6 +128,23 @@
   font-weight: 900;
 }
 
+.search-result-card__badges {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.search-result-card__note-badge {
+  border-radius: 999px;
+  background: #fff8de;
+  color: #9f6a00;
+  padding: 5px 9px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
 .search-result-card__meaning {
   margin: 0;
   color: #293846;
@@ -160,6 +177,12 @@
   font-size: 15px;
   font-weight: 800;
   line-height: 1.35;
+}
+
+.search-note-editor {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 8px;
 }
 
 @media (min-width: 560px) {

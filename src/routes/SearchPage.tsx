@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
+import WordNoteEditor from "../components/WordNoteEditor";
+import { vocabWords } from "../data/vocab";
 import type { VocabTag } from "../types/vocab";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
 import { loadStudyProgress, type StudyStatus, type WordStudyRecord } from "../utils/studyStorage";
+import { hasWordNote } from "../utils/wordNotesStorage";
 import "./SearchPage.css";
 
 type TagFilter = "全部" | VocabTag;
 
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
 const tagFilters: TagFilter[] = ["全部", "四/六", "六级", "四级补充"];
 const statusText: Record<StudyStatus, string> = {
   known: "认识",
@@ -57,6 +57,7 @@ function SearchPage() {
   const [tagFilter, setTagFilter] = useState<TagFilter>("全部");
   const [expandedWordId, setExpandedWordId] = useState<number | null>(null);
   const [progress] = useState(() => loadStudyProgress());
+  const [, setNoteVersion] = useState(0);
   const keyword = query.trim().toLowerCase();
   const results = useMemo(() => {
     if (!keyword) {
@@ -138,7 +139,12 @@ function SearchPage() {
                 >
                   <span className="search-result-card__top">
                     <span className="search-result-card__word">{item.word}</span>
-                    <span className="search-result-card__tag">{item.tag}</span>
+                    <span className="search-result-card__badges">
+                      {hasWordNote(item.id) ? (
+                        <span className="search-result-card__note-badge">有笔记</span>
+                      ) : null}
+                      <span className="search-result-card__tag">{item.tag}</span>
+                    </span>
                   </span>
                   <span className="search-result-card__meaning">{item.meaning}</span>
                 </button>
@@ -180,6 +186,13 @@ function SearchPage() {
                       <span className="search-detail__value">
                         {getRecordValue(record, "nextReviewAt")}
                       </span>
+                    </div>
+                    <div className="search-note-editor">
+                      <span className="search-detail__label">个人笔记</span>
+                      <WordNoteEditor
+                        wordId={item.id}
+                        onChanged={() => setNoteVersion((version) => version + 1)}
+                      />
                     </div>
                   </div>
                 ) : null}

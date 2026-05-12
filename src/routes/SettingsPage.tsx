@@ -2,10 +2,10 @@ import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { APP_VERSION } from "../config/appVersion";
 import {
-  clearStudyProgress,
-  exportStudyProgressJson,
-  importStudyProgressJson,
-} from "../utils/studyStorage";
+  clearAllLearningData,
+  downloadBackupFile,
+  importBackupData,
+} from "../utils/backupStorage";
 import {
   loadSettings,
   saveSettings,
@@ -16,8 +16,8 @@ import {
   type StudyOrder,
   type StudyRange,
 } from "../utils/settingsStorage";
-import { clearTodayTask } from "../utils/todayTaskStorage";
 import { clearVocabBook } from "../utils/vocabBookStorage";
+import { clearAllWordNotes } from "../utils/wordNotesStorage";
 import "./SettingsPage.css";
 
 const dailyGoals: DailyGoal[] = [50, 100, 150, 200];
@@ -41,37 +41,61 @@ function SettingsPage() {
     setMessage(successMessage);
   }
 
-  function handleClearProgress() {
-    const confirmed = window.confirm("确定要清空所有学习记录吗？这个操作不能撤销。");
+  function handleExportBackup() {
+    downloadBackupFile();
+    setMessage("学习数据已导出，请妥善保存备份文件。");
+  }
+
+  async function handleImportBackup(file: File | undefined) {
+    if (!file) {
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text) as unknown;
+      const confirmed = window.confirm("导入备份会覆盖当前学习数据，确定继续吗？");
+
+      if (!confirmed) {
+        return;
+      }
+
+      importBackupData(parsed);
+
+      const shouldReload = window.confirm("导入成功，请刷新页面。现在立即刷新吗？");
+
+      if (shouldReload) {
+        window.location.reload();
+        return;
+      }
+
+      setMessage("导入成功，请刷新页面。");
+    } catch {
+      setMessage("导入失败：请选择当前 App 导出的有效 JSON 备份文件。");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }
+
+  function handleClearAllLearningData() {
+    const confirmed = window.confirm(
+      "确定要清空全部学习数据吗？这会删除学习记录、今日任务、生词本、错词统计和设置。建议先导出备份。",
+    );
 
     if (!confirmed) {
       return;
     }
 
-    const confirmedAgain = window.confirm("请再次确认：清空后今日进度、错词和复习记录都会归零。");
+    const confirmedAgain = window.confirm("请再次确认：清空后将恢复为首次使用状态。");
 
     if (!confirmedAgain) {
       return;
     }
 
-    clearStudyProgress();
-    clearTodayTask();
-    setMessage("学习记录已清空。");
-  }
-
-  function handleExportProgress() {
-    const jsonText = exportStudyProgressJson();
-    const blob = new Blob([jsonText], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = `cet-vocab-progress-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
-    setMessage("学习记录 JSON 已导出。");
+    clearAllLearningData();
+    window.location.reload();
   }
 
   function handleClearVocabBook() {
@@ -93,23 +117,23 @@ function SettingsPage() {
     setMessage("生词本已清空。");
   }
 
-  async function handleImportProgress(file: File | undefined) {
-    if (!file) {
+  function handleClearWordNotes() {
+    const confirmed = window.confirm(
+      "确定要清空所有个人笔记吗？这个操作不会删除学习记录，但会删除你给单词写的所有笔记。",
+    );
+
+    if (!confirmed) {
       return;
     }
 
-    try {
-      const jsonText = await file.text();
-      importStudyProgressJson(jsonText);
-      clearTodayTask();
-      setMessage("学习记录已导入。");
-    } catch {
-      setMessage("导入失败：请选择有效的学习记录 JSON 文件。");
-    } finally {
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    const confirmedAgain = window.confirm("请再次确认：清空后所有个人笔记都会被删除。");
+
+    if (!confirmedAgain) {
+      return;
     }
+
+    clearAllWordNotes();
+    setMessage("所有个人笔记已清空。");
   }
 
   return (
@@ -126,6 +150,9 @@ function SettingsPage() {
         <p className="settings-section__text">当前版本：v{APP_VERSION}</p>
         <Link className="settings-link" to="/stats">
           查看学习统计
+        </Link>
+        <Link className="settings-link" to="/notes">
+          查看我的笔记
         </Link>
       </section>
 
@@ -257,32 +284,48 @@ function SettingsPage() {
       </section>
 
       <section className="settings-section">
-        <h2 className="settings-section__title">数据管理</h2>
-        <p className="settings-section__text">学习记录只保存在当前浏览器本地。</p>
+        <h2 className="settings-section__title">数据备份</h2>
+        <p className="settings-section__text">
+          学习数据只保存在当前浏览器本地。建议定期导出 JSON 备份，换手机时可以直接导入恢复。
+        </p>
         <div className="settings-data-actions">
-          <button className="settings-action settings-action--danger" type="button" onClick={handleClearProgress}>
-            清空学习记录
-          </button>
-          <button className="settings-action settings-action--danger" type="button" onClick={handleClearVocabBook}>
-            清空生词本
-          </button>
-          <button className="settings-action" type="button" onClick={handleExportProgress}>
-            导出学习记录 JSON
+          <button className="settings-action" type="button" onClick={handleExportBackup}>
+            导出学习数据
           </button>
           <button
             className="settings-action"
             type="button"
             onClick={() => fileInputRef.current?.click()}
           >
-            导入学习记录 JSON
+            导入学习数据
+          </button>
+          <button
+            className="settings-action settings-action--danger"
+            type="button"
+            onClick={handleClearAllLearningData}
+          >
+            清空全部学习数据
           </button>
           <input
             accept="application/json,.json"
             className="settings-file-input"
             ref={fileInputRef}
             type="file"
-            onChange={(event) => void handleImportProgress(event.target.files?.[0])}
+            onChange={(event) => void handleImportBackup(event.target.files?.[0])}
           />
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h2 className="settings-section__title">数据管理</h2>
+        <p className="settings-section__text">如果只是想整理生词本或个人笔记，可以单独清空，不影响学习记录。</p>
+        <div className="settings-data-actions">
+          <button className="settings-action settings-action--danger" type="button" onClick={handleClearVocabBook}>
+            清空生词本
+          </button>
+          <button className="settings-action settings-action--danger" type="button" onClick={handleClearWordNotes}>
+            清空所有个人笔记
+          </button>
         </div>
       </section>
     </section>

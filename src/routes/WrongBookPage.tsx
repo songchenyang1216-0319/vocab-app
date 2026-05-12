@@ -1,15 +1,12 @@
 import { useMemo, useState } from "react";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
+import { wordMap } from "../data/vocab";
 import {
   loadStudyProgress,
   markWrongWordAsKnown,
   type WordStudyRecord,
 } from "../utils/studyStorage";
+import { getWordNote } from "../utils/wordNotesStorage";
 import "./WrongBookPage.css";
-
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
-const wordMap = new Map(vocabWords.map((word) => [word.id, word]));
 
 function WrongBookPage() {
   const [progress, setProgress] = useState(() => loadStudyProgress());
@@ -48,7 +45,12 @@ function WrongBookPage() {
           {wrongWords.map(({ record, word }) => (
             <li className="wrong-word-card" key={record.wordId}>
               <div className="wrong-word-card__top">
-                <h2 className="wrong-word-card__word">{word!.word}</h2>
+                <h2 className="wrong-word-card__word">
+                  {word!.word}
+                  {getWordNote(record.wordId) ? (
+                    <span className="wrong-word-card__note-badge">有笔记</span>
+                  ) : null}
+                </h2>
                 <div className="wrong-word-card__meta">
                   <span className="wrong-word-card__tag">{word!.tag}</span>
                   <span className="wrong-word-card__count">错 {record.wrongCount} 次</span>
@@ -56,6 +58,9 @@ function WrongBookPage() {
               </div>
 
               <p className="wrong-word-card__meaning">{word!.meaning}</p>
+              {getWordNote(record.wordId) ? (
+                <p className="wrong-word-card__note">笔记：{getWordNote(record.wordId)!.content}</p>
+              ) : null}
 
               <button
                 className="wrong-word-card__button"

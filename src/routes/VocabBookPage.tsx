@@ -1,11 +1,8 @@
 import { useMemo, useState } from "react";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
+import { wordMap } from "../data/vocab";
 import { getVocabBookItems, removeFromVocabBook } from "../utils/vocabBookStorage";
+import { getWordNote } from "../utils/wordNotesStorage";
 import "./VocabBookPage.css";
-
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
-const wordMap = new Map(vocabWords.map((word) => [word.id, word]));
 
 function formatAddedAt(value: string) {
   const date = new Date(value);
@@ -60,13 +57,21 @@ function VocabBookPage() {
             <li className="vocab-book-card" key={item.wordId}>
               <div className="vocab-book-card__top">
                 <div>
-                  <h2 className="vocab-book-card__word">{word!.word}</h2>
+                  <h2 className="vocab-book-card__word">
+                    {word!.word}
+                    {getWordNote(item.wordId) ? (
+                      <span className="vocab-book-card__note-badge">有笔记</span>
+                    ) : null}
+                  </h2>
                   <p className="vocab-book-card__time">加入时间：{formatAddedAt(item.addedAt)}</p>
                 </div>
                 <span className="vocab-book-card__tag">{word!.tag}</span>
               </div>
 
               <p className="vocab-book-card__meaning">{word!.meaning}</p>
+              {getWordNote(item.wordId) ? (
+                <p className="vocab-book-card__note">笔记：{getWordNote(item.wordId)!.content}</p>
+              ) : null}
 
               <button
                 className="vocab-book-card__button"

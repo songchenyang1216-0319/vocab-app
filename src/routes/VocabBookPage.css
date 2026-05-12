@@ -88,6 +88,18 @@
   line-height: 1.2;
 }
 
+.vocab-book-card__note-badge {
+  display: inline-flex;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #fff8de;
+  color: #9f6a00;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
 .vocab-book-card__time {
   margin-top: 8px;
   color: #708092;
@@ -108,6 +120,17 @@
   color: #293846;
   font-size: 16px;
   line-height: 1.7;
+}
+
+.vocab-book-card__note {
+  margin: 0;
+  border-radius: 8px;
+  background: #fffdf4;
+  color: #5e4b1a;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 .vocab-book-card__button {

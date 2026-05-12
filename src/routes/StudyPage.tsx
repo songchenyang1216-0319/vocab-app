@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
+import WordNoteEditor from "../components/WordNoteEditor";
+import { vocabWords, wordMap } from "../data/vocab";
 import type { StudyStatus } from "../utils/studyStorage";
 import {
   ensureStudyQueue,
@@ -9,7 +10,6 @@ import {
   markReviewWord,
   moveToNextStudyWord,
 } from "../utils/studyStorage";
-import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
 import { loadSettings } from "../utils/settingsStorage";
 import {
   appendMoreNewWords,
@@ -22,10 +22,8 @@ import {
   type TodayTask,
 } from "../utils/todayTaskStorage";
 import { addToVocabBook, isInVocabBook } from "../utils/vocabBookStorage";
+import { hasWordNote } from "../utils/wordNotesStorage";
 import "./StudyPage.css";
-
-const vocabWords = parseVocabMarkdown(vocabMarkdown);
-const wordMap = new Map(vocabWords.map((word) => [word.id, word]));
 
 const actionButtons: Array<{ label: string; status: StudyStatus; className: string }> = [
   { label: "认识", status: "known", className: "study-action-button--known" },
@@ -44,6 +42,8 @@ function StudyPage() {
     ensureTodayTask(initialProgress, settings, vocabWords),
   );
   const [showMeaning, setShowMeaning] = useState(false);
+  const [showNoteEditor, setShowNoteEditor] = useState(false);
+  const [, setNoteVersion] = useState(0);
   const [answerPhase, setAnswerPhase] = useState<AnswerPhase>("idle");
   const studyQueueIds = progress.studyQueueIds ?? [];
   const taskMode: TaskMode = getCurrentTaskMode(todayTask);
@@ -59,6 +59,7 @@ function StudyPage() {
   const completedTaskCount = todayTask.completedReviewCount + todayTask.completedNewCount;
   const currentDisplayIndex = currentWord ? Math.min(completedTaskCount + 1, Math.max(totalTaskCount, 1)) : totalTaskCount;
   const currentWordInVocabBook = currentWord ? isInVocabBook(currentWord.id) : false;
+  const currentWordHasNote = currentWord ? hasWordNote(currentWord.id) : false;
   const reviewActions: Array<{ label: string; status: StudyStatus; className: string }> = [
     { label: "记住了", status: "known", className: "study-action-button--known" },
     { label: "还模糊", status: "vague", className: "study-action-button--vague" },
@@ -67,6 +68,7 @@ function StudyPage() {
 
   function resetAnswerUi() {
     setShowMeaning(false);
+    setShowNoteEditor(false);
     setAnswerPhase("idle");
   }
 
@@ -263,8 +265,24 @@ function StudyPage() {
           <h1 className="study-card__word">{currentWord.word}</h1>
           <div className="study-meta-row">
             <span className="study-card__tag">{currentWord.tag}</span>
+            <button
+              className={currentWordHasNote ? "study-note-toggle study-note-toggle--active" : "study-note-toggle"}
+              type="button"
+              onClick={() => setShowNoteEditor((value) => !value)}
+            >
+              {currentWordHasNote ? "有笔记" : "笔记"}
+            </button>
           </div>
         </div>
+
+        {showNoteEditor ? (
+          <div className="study-note-panel">
+            <WordNoteEditor
+              wordId={currentWord.id}
+              onChanged={() => setNoteVersion((version) => version + 1)}
+            />
+          </div>
+        ) : null}
 
         <div className="study-meaning" aria-live="polite">
           {showMeaning ? (

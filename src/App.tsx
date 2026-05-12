@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from "react-router-dom";
 import AppUpdatePrompt from "./components/AppUpdatePrompt";
 import HomePage from "./routes/HomePage";
+import NotesPage from "./routes/NotesPage";
 import ReviewPage from "./routes/ReviewPage";
 import SearchPage from "./routes/SearchPage";
 import SettingsPage from "./routes/SettingsPage";
@@ -28,6 +29,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/study" element={<StudyPage />} />
+          <Route path="/notes" element={<NotesPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/wrong-book" element={<WrongBookPage />} />

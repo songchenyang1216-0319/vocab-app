@@ -81,6 +81,18 @@
   overflow-wrap: anywhere;
 }
 
+.wrong-word-card__note-badge {
+  display: inline-flex;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #fff8de;
+  color: #9f6a00;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
 .wrong-word-card__meta {
   display: flex;
   flex: 0 0 auto;
@@ -112,6 +124,17 @@
   color: #293846;
   font-size: 17px;
   line-height: 1.75;
+}
+
+.wrong-word-card__note {
+  margin: 0;
+  border-radius: 8px;
+  background: #fffdf4;
+  color: #5e4b1a;
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
 .wrong-word-card__button {

@@ -4,6 +4,7 @@ import { getVocabBookItems } from "./vocabBookStorage";
 interface StoredStudyRecord {
   wordId: number;
   status: StudyStatus;
+  wrongCount?: number;
 }
 
 interface StoredProgress {
@@ -71,7 +72,7 @@ export function readHomeStats(): HomeStats {
   return {
     todayStudiedCount: progress.todayStudiedIds?.length ?? 0,
     knownCount: records.filter((record) => record.status === "known").length,
-    wrongCount: records.filter((record) => record.status === "unknown").length,
+    wrongCount: records.filter((record) => (record.wrongCount ?? 0) > 0).length,
     vocabBookCount,
   };
 }
