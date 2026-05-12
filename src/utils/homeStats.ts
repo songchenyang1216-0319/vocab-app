@@ -1,4 +1,5 @@
 import { STUDY_STORAGE_KEY, type StudyStatus } from "./studyStorage";
+import { getVocabBookItems } from "./vocabBookStorage";
 
 interface StoredStudyRecord {
   wordId: number;
@@ -14,6 +15,7 @@ export interface HomeStats {
   todayStudiedCount: number;
   knownCount: number;
   wrongCount: number;
+  vocabBookCount: number;
 }
 
 function isStoredStudyRecord(value: unknown): value is StoredStudyRecord {
@@ -45,10 +47,12 @@ function parseStoredProgress(rawValue: string | null): StoredProgress | null {
 }
 
 export function readHomeStats(): HomeStats {
+  const vocabBookCount = getVocabBookItems().length;
   const defaultStats: HomeStats = {
     todayStudiedCount: 0,
     knownCount: 0,
     wrongCount: 0,
+    vocabBookCount,
   };
 
   if (typeof window === "undefined") {
@@ -68,5 +72,6 @@ export function readHomeStats(): HomeStats {
     todayStudiedCount: progress.todayStudiedIds?.length ?? 0,
     knownCount: records.filter((record) => record.status === "known").length,
     wrongCount: records.filter((record) => record.status === "unknown").length,
+    vocabBookCount,
   };
 }

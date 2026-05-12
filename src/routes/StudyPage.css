@@ -69,6 +69,32 @@
   gap: 18px;
 }
 
+.study-task-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.study-task-summary__badge {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  min-height: 28px;
+  border-radius: 999px;
+  background: #eef4fb;
+  color: #1769aa;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.study-task-summary__text {
+  margin: 0;
+  color: #7a8088;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
 .study-card__word {
   margin: 0;
   color: #15171c;
@@ -142,6 +168,7 @@
   display: grid;
   gap: 20px;
   padding-top: 16px;
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
 }
 
 .study-hint {
@@ -231,7 +258,8 @@
 }
 
 .study-continue-button,
-.study-restart-button {
+.study-restart-button,
+.study-secondary-button {
   min-height: 56px;
   border: 0;
   border-radius: 8px;
@@ -244,6 +272,86 @@
     opacity 130ms ease,
     transform 130ms ease;
   touch-action: manipulation;
+}
+
+.study-secondary-button {
+  background: #edf2f6;
+  color: #425262;
+}
+
+.study-follow-up {
+  display: grid;
+  gap: 12px;
+}
+
+.study-follow-up--neutral {
+  padding: 6px 0 10px;
+}
+
+.study-follow-up__text {
+  margin: 0;
+  color: #6a717b;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.study-follow-up__actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.study-follow-up-button {
+  min-height: 56px;
+  border: 0;
+  border-radius: 12px;
+  background: #f0f2f5;
+  color: #15171c;
+  padding: 0 14px;
+  font-size: 18px;
+  font-weight: 900;
+  transition:
+    transform 130ms ease,
+    opacity 130ms ease,
+    background-color 130ms ease;
+  touch-action: manipulation;
+}
+
+.study-follow-up-button:active {
+  transform: scale(0.95);
+  opacity: 0.84;
+}
+
+.study-follow-up-button--unknown {
+  background: #fff0f1;
+  color: #b42332;
+}
+
+.study-follow-up-button--vague {
+  background: #fff8de;
+  color: #9f6a00;
+}
+
+.study-follow-up-button--mistake {
+  background: #fff4df;
+  color: #b36b00;
+}
+
+.study-follow-up-button--book {
+  background: #eaf4ff;
+  color: #1769aa;
+}
+
+.study-follow-up-button--next {
+  background: #eef1f4;
+  color: #4e5560;
+}
+
+.study-follow-up-button--known-next {
+  background: #eaf8f1;
+  color: #17764f;
 }
 
 .study-complete {

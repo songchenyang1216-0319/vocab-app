@@ -10,12 +10,18 @@ import {
   saveSettings,
   type AppSettings,
   type DailyGoal,
+  type DailyNewWordCount,
+  type DailyReviewLimit,
   type StudyOrder,
   type StudyRange,
 } from "../utils/settingsStorage";
+import { clearTodayTask } from "../utils/todayTaskStorage";
+import { clearVocabBook } from "../utils/vocabBookStorage";
 import "./SettingsPage.css";
 
 const dailyGoals: DailyGoal[] = [50, 100, 150, 200];
+const dailyNewWordCounts: DailyNewWordCount[] = [20, 30, 50, 100];
+const dailyReviewLimits: DailyReviewLimit[] = [30, 50, 100, "不限制"];
 const studyRanges: StudyRange[] = ["全部", "四/六", "六级", "四级补充"];
 const studyOrders: Array<{ label: string; value: StudyOrder }> = [
   { label: "按 A-Z 顺序", value: "az" },
@@ -48,6 +54,7 @@ function SettingsPage() {
     }
 
     clearStudyProgress();
+    clearTodayTask();
     setMessage("学习记录已清空。");
   }
 
@@ -66,6 +73,25 @@ function SettingsPage() {
     setMessage("学习记录 JSON 已导出。");
   }
 
+  function handleClearVocabBook() {
+    const confirmed = window.confirm(
+      "确定要清空生词本吗？这个操作不会删除学习记录，但会移除所有生词本单词。",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    const confirmedAgain = window.confirm("请再次确认：清空后生词本里的单词将全部移除。");
+
+    if (!confirmedAgain) {
+      return;
+    }
+
+    clearVocabBook();
+    setMessage("生词本已清空。");
+  }
+
   async function handleImportProgress(file: File | undefined) {
     if (!file) {
       return;
@@ -74,6 +100,7 @@ function SettingsPage() {
     try {
       const jsonText = await file.text();
       importStudyProgressJson(jsonText);
+      clearTodayTask();
       setMessage("学习记录已导入。");
     } catch {
       setMessage("导入失败：请选择有效的学习记录 JSON 文件。");
@@ -115,6 +142,56 @@ function SettingsPage() {
               }
             >
               {goal} 个
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h2 className="settings-section__title">每日新词数量</h2>
+        <div className="settings-options">
+          {dailyNewWordCounts.map((count) => (
+            <button
+              className={
+                settings.dailyNewWordCount === count
+                  ? "settings-option settings-option--active"
+                  : "settings-option"
+              }
+              key={count}
+              type="button"
+              onClick={() =>
+                updateSettings(
+                  { ...settings, dailyNewWordCount: count },
+                  `每日新词数量已设置为 ${count} 个。`,
+                )
+              }
+            >
+              {count} 个
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h2 className="settings-section__title">每日复习上限</h2>
+        <div className="settings-options">
+          {dailyReviewLimits.map((limit) => (
+            <button
+              className={
+                settings.dailyReviewLimit === limit
+                  ? "settings-option settings-option--active"
+                  : "settings-option"
+              }
+              key={String(limit)}
+              type="button"
+              onClick={() =>
+                updateSettings(
+                  { ...settings, dailyReviewLimit: limit },
+                  `每日复习上限已设置为 ${limit}。`,
+                )
+              }
+            >
+              {limit === "不限制" ? limit : `${limit} 个`}
             </button>
           ))}
         </div>
@@ -173,6 +250,9 @@ function SettingsPage() {
         <div className="settings-data-actions">
           <button className="settings-action settings-action--danger" type="button" onClick={handleClearProgress}>
             清空学习记录
+          </button>
+          <button className="settings-action settings-action--danger" type="button" onClick={handleClearVocabBook}>
+            清空生词本
           </button>
           <button className="settings-action" type="button" onClick={handleExportProgress}>
             导出学习记录 JSON

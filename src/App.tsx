@@ -1,10 +1,12 @@
 import { NavLink, Route, Routes } from "react-router-dom";
+import PwaUpdateBanner from "./components/PwaUpdateBanner";
 import HomePage from "./routes/HomePage";
 import ReviewPage from "./routes/ReviewPage";
 import SearchPage from "./routes/SearchPage";
 import SettingsPage from "./routes/SettingsPage";
 import StudyPage from "./routes/StudyPage";
 import VocabPreviewPage from "./routes/VocabPreviewPage";
+import VocabBookPage from "./routes/VocabBookPage";
 import WrongBookPage from "./routes/WrongBookPage";
 
 const navItems = [
@@ -19,12 +21,15 @@ const navItems = [
 function App() {
   return (
     <div className="app-shell">
+      <PwaUpdateBanner />
+
       <main className="app-main">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/study" element={<StudyPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/wrong-book" element={<WrongBookPage />} />
+          <Route path="/vocab-book" element={<VocabBookPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/vocab-preview" element={<VocabPreviewPage />} />

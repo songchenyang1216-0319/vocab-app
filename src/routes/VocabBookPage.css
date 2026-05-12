@@ -1,0 +1,130 @@
+.vocab-book-page {
+  gap: 18px;
+}
+
+.vocab-book-header {
+  display: grid;
+  gap: 8px;
+}
+
+.vocab-book-header__eyebrow {
+  margin: 0;
+  color: #607184;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.vocab-book-header__title {
+  margin: 0;
+  color: #15212f;
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+.vocab-book-header__text {
+  margin: 0;
+  color: #536576;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.vocab-book-empty {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 20px 18px;
+}
+
+.vocab-book-empty h2,
+.vocab-book-empty p {
+  margin: 0;
+}
+
+.vocab-book-empty h2 {
+  color: #15212f;
+  font-size: 22px;
+}
+
+.vocab-book-empty p {
+  color: #536576;
+  line-height: 1.7;
+}
+
+.vocab-book-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vocab-book-card {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.vocab-book-card__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vocab-book-card__word,
+.vocab-book-card__time,
+.vocab-book-card__meaning {
+  margin: 0;
+}
+
+.vocab-book-card__word {
+  color: #15212f;
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.vocab-book-card__time {
+  margin-top: 8px;
+  color: #708092;
+  font-size: 13px;
+}
+
+.vocab-book-card__tag {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #edf4fb;
+  color: #1769aa;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vocab-book-card__meaning {
+  color: #293846;
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.vocab-book-card__button {
+  min-height: 46px;
+  border: 1px solid #d8e2ec;
+  border-radius: 8px;
+  background: #f9fbfd;
+  color: #17202a;
+  font-weight: 800;
+  transition:
+    transform 0.14s ease,
+    opacity 0.14s ease,
+    background-color 0.14s ease;
+}
+
+.vocab-book-card__button:active {
+  transform: scale(0.97);
+  opacity: 0.84;
+  background: #eef4f9;
+}
