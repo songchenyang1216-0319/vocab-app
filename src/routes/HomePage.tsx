@@ -5,12 +5,19 @@ import { APP_VERSION } from "../config/appVersion";
 import vocabMarkdown from "../data/CET4_CET6_5500_words_CN.md?raw";
 import { readHomeStats } from "../utils/homeStats";
 import { parseVocabMarkdown } from "../utils/parseVocabMarkdown";
+import { loadSettings } from "../utils/settingsStorage";
+import { getStudyWords, SKIP_SIMPLE_WORDS } from "../utils/studyWords";
 import "./HomePage.css";
 
 const vocabWords = parseVocabMarkdown(vocabMarkdown);
 
 function HomePage() {
   const stats = readHomeStats();
+  const settings = loadSettings();
+  const studyWords = getStudyWords(vocabWords, {
+    studyRange: settings.studyRange,
+    skipSimpleWords: SKIP_SIMPLE_WORDS,
+  });
 
   return (
     <section className="page home-page">
@@ -21,7 +28,7 @@ function HomePage() {
       </header>
 
       <div className="home-stats" aria-label="学习统计">
-        <HomeStatCard label="总词数" value={vocabWords.length} />
+        <HomeStatCard label="总词数" value={studyWords.length} />
         <HomeStatCard label="今日已背" value={stats.todayStudiedCount} />
         <HomeStatCard label="累计认识" value={stats.knownCount} />
         <HomeStatCard label="错词数量" value={stats.wrongCount} />

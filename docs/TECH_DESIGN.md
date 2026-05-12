@@ -305,6 +305,33 @@ type Word = {
 
 注意：PRD 中提到过更细的 `partOfSpeech` 和 `definitionCn`。技术实现第一版建议先用一个 `meaning` 字段承接完整释义，降低解析难度。后续如果需要更细展示，再升级数据结构。
 
+### 4.1 简单词过滤规则
+
+简单词过滤不应该放在 Markdown 解析阶段。
+
+原因：
+
+- 解析函数的职责是完整还原词库。
+- 搜索页需要完整词库。
+- 错词本需要能根据旧学习记录找到原始单词。
+- 如果解析阶段直接删词，旧记录中的 `wordId` 可能找不到对应单词。
+
+因此建议新增学习词表工具函数，例如：
+
+```text
+src/utils/studyWords.ts
+```
+
+第一版过滤规则：
+
+```ts
+function shouldSkipSimpleWord(word: Word): boolean {
+  return word.word.trim().length <= 1;
+}
+```
+
+背单词页使用过滤后的词表，搜索页和错词本继续使用完整词表。
+
 ## 5. 学习记录数据结构
 
 单个单词的学习记录：
@@ -372,8 +399,30 @@ type AppProgress = {
   today: string;
   todayStudiedIds: number[];
   records: Record<number, WordStudyRecord>;
+  studyQueueIds?: number[];
+  studyQueueMode?: string;
+  studyQueueCreatedAt?: string;
 };
 ```
+
+新增字段说明：
+
+- `studyQueueIds`：可选字段，保存当前背诵队列的单词 id 顺序。
+- `studyQueueMode`：可选字段，记录生成队列时使用的设置，例如背诵范围、背诵顺序和是否过滤简单词。
+- `studyQueueCreatedAt`：可选字段，记录队列生成时间。
+
+本次功能更新不建议更换 `localStorage` key，仍然使用：
+
+```text
+metro-vocab-progress-v1
+```
+
+兼容策略：
+
+- 旧数据没有 `studyQueueIds` 时，进入背单词页自动生成。
+- 旧的 `records` 原样保留。
+- `currentWordIndex` 继续表示“当前队列中的位置”，不是原始 Markdown 词表中的位置。
+- 如果用户修改背诵范围或背诵顺序，可以重新生成队列，并将 `currentWordIndex` 重置为 0。
 
 示例：
 
@@ -429,6 +478,41 @@ function getNextReviewAt(status: StudyStatus, now: Date): string {
 }
 ```
 
+### 5.4 学习队列生成规则
+
+随机背诵顺序需要使用稳定队列，不要在组件渲染时临时随机。
+
+建议新增工具函数：
+
+```ts
+type BuildStudyQueueOptions = {
+  studyRange: "全部" | "四/六" | "六级" | "四级补充";
+  studyOrder: "az" | "random" | "unknown-first";
+  skipSimpleWords: boolean;
+  records: Record<number, WordStudyRecord>;
+};
+
+function buildStudyQueueIds(words: Word[], options: BuildStudyQueueOptions): number[] {
+  // 1. 按背诵范围过滤
+  // 2. 过滤 1 个字母的简单词
+  // 3. 根据背诵顺序排序
+  // 4. 返回 wordId 数组
+}
+```
+
+排序规则：
+
+- `az`：保持词表原始顺序。
+- `random`：使用 Fisher-Yates 洗牌生成随机顺序。
+- `unknown-first`：优先展示 `status === "unknown"` 或 `wrongCount > 0` 的单词，其余单词保持原顺序。
+
+随机顺序要求：
+
+- 只在生成队列时随机一次。
+- 队列保存到 `localStorage`。
+- 刷新页面后继续使用同一个队列。
+- 设置变化后重新生成队列。
+
 ## 6. 页面路由设计
 
 第一版建议使用 `react-router-dom`。
@@ -461,6 +545,13 @@ const routes = [
 - `progress.todayStudiedIds.length`
 - `records` 统计结果
 
+本次功能更新后，首页的总词数建议使用“当前可背词数”，而不是完整词库数量。当前可背词数需要考虑：
+
+- 背诵范围设置。
+- 简单词过滤规则。
+
+搜索页和词表测试页仍然可以展示完整词库数量。
+
 ### 6.2 背单词页 `/study`
 
 职责：
@@ -481,6 +572,23 @@ const routes = [
 currentWordIndex + 1
 保存到 localStorage
 ```
+
+本次功能更新后，背单词页逻辑改为：
+
+```text
+读取完整词库
+读取设置 settings
+读取学习进度 progress
+如果 progress 中没有可用 studyQueueIds，则生成学习队列
+通过 studyQueueIds[currentWordIndex] 找到当前 wordId
+再通过 wordId 找到当前单词
+用户点击按钮
+更新 records[word.id]
+currentWordIndex + 1
+保存到 localStorage
+```
+
+背单词页是随机顺序功能的主要受影响页面。
 
 ### 6.3 复习页 `/review`
 
@@ -534,6 +642,8 @@ const result = words.filter((item) =>
 );
 ```
 
+搜索页不应该使用过滤后的学习队列，而应该继续搜索完整词库。这样用户仍然可以查到被跳过的简单词。
+
 ### 6.6 设置页 `/settings`
 
 职责：
@@ -546,6 +656,16 @@ const result = words.filter((item) =>
 危险操作：
 
 - 清空学习进度前必须二次确认。
+
+本次功能更新后，设置页中的“背诵顺序”会影响背单词页的学习队列。
+
+入口：
+
+- 用户进入设置页。
+- 在“背诵顺序”中选择“随机顺序”。
+- 返回背单词页后，App 按随机队列展示单词。
+
+如果设置发生变化，需要重新生成学习队列。为了避免破坏旧学习记录，只重置队列位置，不删除 `records`。
 
 ## 7. 本地存储方案
 
@@ -566,6 +686,8 @@ metro-vocab-progress-v2
 ```
 
 或者通过 `version` 字段做迁移。
+
+本次功能更新只新增可选字段，不需要更换 key。读取旧数据时，如果没有新字段，使用默认逻辑自动补齐。
 
 ### 7.2 读取进度
 
@@ -915,6 +1037,7 @@ npm run build
 - 能看到今日进度。
 - 点击“开始学习”进入背单词页。
 - 点击“复习”进入复习页。
+- 开启简单词过滤后，总词数应小于或等于完整词表数量。
 
 背单词页：
 
@@ -924,6 +1047,9 @@ npm run build
 - 点击“不认识”后记录为 `unknown`。
 - 今日学习数量会增加。
 - 刷新页面后进度不丢失。
+- 默认不展示 1 个字母的简单词。
+- 设置为随机顺序后，单词不再按 Markdown 原始顺序出现。
+- 刷新页面后随机顺序保持稳定，不重新洗牌。
 
 复习页：
 
@@ -947,6 +1073,22 @@ npm run build
 - 可以修改每日目标。
 - 清空进度前有确认。
 - 清空后首页统计归零。
+- 修改“背诵顺序”为随机顺序后，背单词页使用随机队列。
+- 修改背诵范围后，背单词页重新生成学习队列。
+
+### 10.7 本次功能更新测试方法
+
+本次更新完成后建议测试：
+
+1. 词库解析仍然是 5500 条左右，说明解析逻辑没有删词。
+2. 首页总词数显示为当前可背词数，过滤 1 个字母词后应小于完整词库数量。
+3. 背单词页第一屏不再出现 `a` 这类 1 个字母单词。
+4. 设置页选择“随机顺序”后，进入背单词页，单词顺序不再是 `a`、`abandon`、`abandonment` 这种原始顺序。
+5. 刷新背单词页后，当前队列顺序保持稳定。
+6. 点击“认识 / 模糊 / 不认识”后，旧学习记录结构仍然正常写入。
+7. 搜索页仍能搜索完整词库，包括被背单词页跳过的简单词。
+8. 错词本仍能显示旧记录中的错词。
+9. `npm run build` 通过。
 
 ### 10.5 PWA 手动测试
 

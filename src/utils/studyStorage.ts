@@ -1,3 +1,7 @@
+import type { VocabWord } from "../types/vocab";
+import type { AppSettings } from "./settingsStorage";
+import { buildStudyQueueIds, getStudyQueueMode, SKIP_SIMPLE_WORDS } from "./studyWords";
+
 export const STUDY_STORAGE_KEY = "metro-vocab-progress-v1";
 
 export type StudyStatus = "known" | "vague" | "unknown";
@@ -18,6 +22,10 @@ export interface AppProgress {
   today: string;
   todayStudiedIds: number[];
   records: Record<number, WordStudyRecord>;
+  studyQueueIds?: number[];
+  studyQueueMode?: string;
+  studyQueueCreatedAt?: string;
+  studyQueueUpdatedAt?: string;
 }
 
 function getTodayText(date = new Date()) {
@@ -92,6 +100,12 @@ function parseProgress(rawValue: string | null): AppProgress {
       ...parsed,
       records: parsed.records ?? {},
       todayStudiedIds: parsed.todayStudiedIds ?? [],
+      studyQueueIds: Array.isArray(parsed.studyQueueIds) ? parsed.studyQueueIds : undefined,
+      studyQueueMode: typeof parsed.studyQueueMode === "string" ? parsed.studyQueueMode : undefined,
+      studyQueueCreatedAt:
+        typeof parsed.studyQueueCreatedAt === "string" ? parsed.studyQueueCreatedAt : undefined,
+      studyQueueUpdatedAt:
+        typeof parsed.studyQueueUpdatedAt === "string" ? parsed.studyQueueUpdatedAt : undefined,
     });
   } catch {
     console.warn("学习记录读取失败：localStorage 中的数据不是有效 JSON，已使用默认进度。");
@@ -136,11 +150,119 @@ export function importStudyProgressJson(jsonText: string): AppProgress {
     ...parsed,
     records: parsed.records ?? {},
     todayStudiedIds: parsed.todayStudiedIds ?? [],
+    studyQueueIds: Array.isArray(parsed.studyQueueIds) ? parsed.studyQueueIds : undefined,
+    studyQueueMode: typeof parsed.studyQueueMode === "string" ? parsed.studyQueueMode : undefined,
+    studyQueueCreatedAt:
+      typeof parsed.studyQueueCreatedAt === "string" ? parsed.studyQueueCreatedAt : undefined,
+    studyQueueUpdatedAt:
+      typeof parsed.studyQueueUpdatedAt === "string" ? parsed.studyQueueUpdatedAt : undefined,
   });
 
   saveStudyProgress(progress);
 
   return progress;
+}
+
+export function ensureStudyQueue(
+  progress: AppProgress,
+  words: VocabWord[],
+  settings: AppSettings,
+): AppProgress {
+  const nextQueueMode = getStudyQueueMode({
+    studyRange: settings.studyRange,
+    studyOrder: settings.studyOrder,
+    skipSimpleWords: SKIP_SIMPLE_WORDS,
+  });
+  const hasValidQueue =
+    progress.studyQueueMode === nextQueueMode &&
+    Array.isArray(progress.studyQueueIds) &&
+    progress.studyQueueIds.length > 0;
+
+  if (hasValidQueue) {
+    return progress;
+  }
+
+  const studyQueueIds = buildStudyQueueIds(words, {
+    studyRange: settings.studyRange,
+    studyOrder: settings.studyOrder,
+    skipSimpleWords: SKIP_SIMPLE_WORDS,
+    records: progress.records,
+  });
+  const shouldResetIndex = progress.studyQueueMode !== undefined;
+  const nextProgress: AppProgress = {
+    ...progress,
+    // 旧用户第一次升级时尽量保留当前进度；设置变化后再从新队列开头开始。
+    currentWordIndex: shouldResetIndex ? 0 : Math.min(progress.currentWordIndex, studyQueueIds.length),
+    studyQueueIds,
+    studyQueueMode: nextQueueMode,
+    studyQueueCreatedAt: new Date().toISOString(),
+    studyQueueUpdatedAt: new Date().toISOString(),
+  };
+
+  saveStudyProgress(nextProgress);
+
+  return nextProgress;
+}
+
+export function markCurrentWordWithoutMoving(
+  progress: AppProgress,
+  wordId: number,
+  status: StudyStatus,
+): AppProgress {
+  const now = new Date();
+  const oldRecord = progress.records[wordId];
+  const shouldAddWrongCount = status === "vague" || status === "unknown";
+  const todayStudiedIds = progress.todayStudiedIds.includes(wordId)
+    ? progress.todayStudiedIds
+    : [...progress.todayStudiedIds, wordId];
+
+  const nextProgress: AppProgress = {
+    ...progress,
+    today: getTodayText(now),
+    todayStudiedIds,
+    studyQueueUpdatedAt: now.toISOString(),
+    records: {
+      ...progress.records,
+      [wordId]: {
+        wordId,
+        status,
+        reviewCount: (oldRecord?.reviewCount ?? 0) + 1,
+        wrongCount: (oldRecord?.wrongCount ?? 0) + (shouldAddWrongCount ? 1 : 0),
+        lastReviewAt: now.toISOString(),
+        nextReviewAt: getNextReviewAt(status, now),
+      },
+    },
+  };
+
+  // “模糊 / 不认识”先保存反馈，但不移动索引，让用户看完释义后再手动继续。
+  saveStudyProgress(nextProgress);
+
+  return nextProgress;
+}
+
+export function moveToNextStudyWord(progress: AppProgress, totalWordCount: number): AppProgress {
+  const nextProgress: AppProgress = {
+    ...progress,
+    currentWordIndex: Math.min(progress.currentWordIndex + 1, totalWordCount),
+    studyQueueUpdatedAt: new Date().toISOString(),
+  };
+
+  saveStudyProgress(nextProgress);
+
+  return nextProgress;
+}
+
+export function restartStudyRound(progress: AppProgress): AppProgress {
+  const nextProgress: AppProgress = {
+    ...progress,
+    currentWordIndex: 0,
+    studyQueueUpdatedAt: new Date().toISOString(),
+  };
+
+  // 只重置当前队列位置，不清空 known / vague / unknown / wrongCount / reviewCount。
+  saveStudyProgress(nextProgress);
+
+  return nextProgress;
 }
 
 export function markWordAndMoveNext(
@@ -161,6 +283,7 @@ export function markWordAndMoveNext(
     currentWordIndex: Math.min(progress.currentWordIndex + 1, totalWordCount),
     today: getTodayText(now),
     todayStudiedIds,
+    studyQueueUpdatedAt: now.toISOString(),
     records: {
       ...progress.records,
       [wordId]: {
@@ -203,6 +326,36 @@ export function markWrongWordAsKnown(progress: AppProgress, wordId: number): App
   };
 
   // 错词本点击“已掌握”也要立刻保存，刷新页面后错词不再出现。
+  saveStudyProgress(nextProgress);
+
+  return nextProgress;
+}
+
+export function markReviewWord(progress: AppProgress, wordId: number, status: StudyStatus): AppProgress {
+  const now = new Date();
+  const oldRecord = progress.records[wordId];
+
+  if (!oldRecord) {
+    return progress;
+  }
+
+  const shouldAddWrongCount = status === "vague" || status === "unknown";
+  const nextProgress: AppProgress = {
+    ...progress,
+    records: {
+      ...progress.records,
+      [wordId]: {
+        ...oldRecord,
+        status,
+        reviewCount: oldRecord.reviewCount + 1,
+        wrongCount: oldRecord.wrongCount + (shouldAddWrongCount ? 1 : 0),
+        lastReviewAt: now.toISOString(),
+        nextReviewAt: getNextReviewAt(status, now),
+      },
+    },
+  };
+
+  // 复习页每次反馈后立即保存，避免刷新或退出时丢失复习结果。
   saveStudyProgress(nextProgress);
 
   return nextProgress;

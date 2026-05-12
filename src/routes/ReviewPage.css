@@ -1,0 +1,161 @@
+.review-page {
+  gap: 18px;
+}
+
+.review-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-back-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  border: 1px solid #d8e2ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1769aa;
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.review-progress {
+  color: #526171;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.review-summary {
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.review-summary__label {
+  margin: 0 0 6px;
+  color: #617284;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.review-summary__value {
+  margin: 0;
+  color: #15212f;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.review-card {
+  display: grid;
+  gap: 22px;
+  min-height: 360px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 24px 18px;
+}
+
+.review-card__tag {
+  justify-self: start;
+  border-radius: 999px;
+  background: #e9f3fb;
+  color: #1769aa;
+  padding: 6px 10px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.review-card__word {
+  margin: 0;
+  color: #15212f;
+  font-size: 46px;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.review-meaning {
+  display: grid;
+  gap: 10px;
+  min-height: 112px;
+}
+
+.review-meaning__text {
+  margin: 0;
+  color: #263747;
+  font-size: 20px;
+  line-height: 1.7;
+}
+
+.review-meaning__placeholder {
+  margin: 0;
+  color: #718196;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.review-toggle-button {
+  min-height: 52px;
+  border: 1px solid #c8d6e5;
+  border-radius: 8px;
+  background: #f8fbfe;
+  color: #1769aa;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.review-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.review-action-button {
+  min-height: 64px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  padding: 0 8px;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.review-action-button--known {
+  background: #237a57;
+}
+
+.review-action-button--vague {
+  background: #b45f06;
+}
+
+.review-action-button--unknown {
+  background: #b3261e;
+}
+
+.review-empty {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #dfe7ef;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 28px 18px;
+  text-align: center;
+}
+
+.review-empty h1 {
+  margin: 0;
+  color: #15212f;
+  font-size: 28px;
+}
+
+.review-empty p {
+  margin: 0;
+  color: #526171;
+  font-size: 17px;
+  line-height: 1.7;
+}
