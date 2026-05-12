@@ -4,6 +4,7 @@ import HomePage from "./routes/HomePage";
 import ReviewPage from "./routes/ReviewPage";
 import SearchPage from "./routes/SearchPage";
 import SettingsPage from "./routes/SettingsPage";
+import StatsPage from "./routes/StatsPage";
 import StudyPage from "./routes/StudyPage";
 import VocabPreviewPage from "./routes/VocabPreviewPage";
 import VocabBookPage from "./routes/VocabBookPage";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/study" element={<StudyPage />} />
           <Route path="/review" element={<ReviewPage />} />
+          <Route path="/stats" element={<StatsPage />} />
           <Route path="/wrong-book" element={<WrongBookPage />} />
           <Route path="/vocab-book" element={<VocabBookPage />} />
           <Route path="/search" element={<SearchPage />} />

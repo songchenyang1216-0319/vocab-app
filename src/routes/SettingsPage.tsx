@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { APP_VERSION } from "../config/appVersion";
 import {
   clearStudyProgress,
@@ -123,6 +124,9 @@ function SettingsPage() {
       <section className="settings-section">
         <h2 className="settings-section__title">应用信息</h2>
         <p className="settings-section__text">当前版本：v{APP_VERSION}</p>
+        <Link className="settings-link" to="/stats">
+          查看学习统计
+        </Link>
       </section>
 
       <section className="settings-section">

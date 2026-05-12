@@ -85,6 +85,7 @@ function HomePage() {
           to="/study"
           variant="primary"
         />
+        <HomeActionButton description="看看这段时间学得怎么样" title="学习统计" to="/stats" />
         <HomeActionButton description="集中处理不熟的词" title="复习错词" to="/review" />
         <HomeActionButton description="收集想回头看的新词" title="生词本" to="/vocab-book" />
         <HomeActionButton description="快速查找英文单词" title="搜索单词" to="/search" />
